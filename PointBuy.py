@@ -54,11 +54,9 @@ class PointBuyApp:
         self.window = tk.Tk()
         self.window.title("Point Buy")
 
-        nameVar = tk.IntVar(self.window)
-        nameVar.set(names.get_full_name())
-        self.nameEntry = tk.Entry(self.window, textvariable=nameVar)
+        self.nameEntry = tk.Entry(self.window)
         self.nameEntry.grid(row=0, column=0, padx=self.padX, pady=self.padY)
-        self.nameEntry.config(text=names.get_full_name())
+        self.nameEntry.insert(0, names.get_full_name())
 
         self.pointsLabel = tk.Label(self.window, text="Total Points: 50")
         self.pointsLabel.grid(row=6, column=20, padx=self.padX, pady=self.padY)
@@ -87,7 +85,7 @@ class PointBuyApp:
 
             strVar = tk.StringVar(self.window)
             strVar.set("5")
-            strVar.trace_add("write", partial(self.updateTotal))
+            strVar.trace_add("write", self.updateTotal)
 
             entryObj = tk.Entry(
                 self.window, textvariable=strVar)
@@ -137,12 +135,8 @@ class PointBuyApp:
         file.close()
 
     def reset(self):
-        self.window.destroy()
-        self.setupWindow()
-        self.setupAttributes()
-        self.setupCapabilities()
-        self.setupPointEntries()
-        self.run()
+        for entry in self.attrEntries:
+            entry["strVar"].set("5")
 
     def run(self):
         self.window.mainloop()
