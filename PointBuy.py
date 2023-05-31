@@ -3,9 +3,6 @@ from functools import partial
 import names
 import re
 
-PADX = 20
-PADY = 10
-TOTAL_POINTS = 50
 DESCRIPTORS = [
     "detrimental",
     "impractical",
@@ -32,98 +29,125 @@ SKILLS = [
     "Experience"
 ]
 
-LIST_LENGTH = len(SKILLS)
 
+class PointBuyApp:
+    def __init__(self, totalPoints, capabilities, attributes):
+        self.padX = 20
+        self.padY = 10
 
-def updateTotal(var, index, mode):
-    temp = 0
-    for i in range(LIST_LENGTH):
-        if str.isdigit(entries[i].get()) or entries[i].get() == 0:
-            temp += int(entries[i].get())
-            if int(entries[i].get()) < 1:
-                row = 0
-            elif int(entries[i].get()) >= 10:
-                row = 9
-            else:
-                row = int(entries[i].get()) - 1
-            caps[i].config(text=DESCRIPTORS[row])
-    pointsLabel.config(text="Total Points: {}".format(str(temp)))
+        self.totalPoints = totalPoints
+        self.capabilities = capabilities
+        self.attributes = attributes
 
+        self.window = None
+        self.nameEntry = None
 
-def save():
-    text = ""
-    for i in range(LIST_LENGTH):
-        text += "{}: {} ({})\n".format(SKILLS[i],
-                                       entries[i].get(), DESCRIPTORS[i])
-    maxLen = len(max(re.findall(r"^\S+", text, re.M), key=len))
-    result = re.sub(r"(\S+)[^\S\r\n]+", lambda m: m.group(1) +
-                    ((maxLen + 1) - len(m.group(1))) * " ", text)
-    final = "{}\n\n".format(name.get()) + result
-    file = open("{}.txt".format(name.get()), "w")
-    file.write(final)
-    file.close()
+        self.attrEntries = []
+        self.capLabels = []
 
+        self.setupWindow()
+        self.setupAttributes()
+        self.setupPointEntries()
+        self.setupCapabilities()
 
-def reset():
-    master.destroy()
-    _start()
+    def setupWindow(self):
+        self.window = tk.Tk()
+        self.window.title("Point Buy")
 
+        nameVar = tk.IntVar(self.window)
+        nameVar.set(names.get_full_name())
+        self.nameEntry = tk.Entry(self.window, textvariable=nameVar)
+        self.nameEntry.grid(row=0, column=0, padx=self.padX, pady=self.padY)
+        self.nameEntry.config(text=names.get_full_name())
 
-def _start():
-    global master
-    master = tk.Tk()
-    master.title("Point Buy")
-    master.geometry("750x600")
+        self.pointsLabel = tk.Label(self.window, text="Total Points: 50")
+        self.pointsLabel.grid(row=6, column=20, padx=self.padX, pady=self.padY)
 
-    global nameVar
-    nameVar = tk.IntVar(master)
-    nameVar.set(names.get_full_name())
-    global name
-    name = tk.Entry(master, textvariable=nameVar)
-    name.grid(row=0, column=0, padx=PADX, pady=PADY)
-    name.config(text=names.get_full_name())
+        saveButton = tk.Button(
+            self.window, text="Save File", command=self.save)
+        saveButton.grid(row=0, column=1, padx=self.padX, pady=self.padY)
 
-    global pointsLabel
-    pointsLabel = tk.Label(master, text="Total Points: 50")
-    pointsLabel.grid(row=6, column=20, padx=PADX, pady=PADY)
+        resetButton = tk.Button(self.window, text="Reset", command=self.reset)
+        resetButton.grid(row=0, column=2, padx=self.padX, pady=self.padY)
 
-    tk.Label(master, text="Skill").grid(row=1, column=0, padx=PADX, pady=PADY)
-    tk.Label(master, text="Capability").grid(
-        row=1, column=12, padx=PADX, pady=PADY)
-    tk.Label(master, text="Points").grid(row=1, column=4, padx=PADX, pady=PADY)
+    def setupAttributes(self):
+        tk.Label(self.window, text="Attributes").grid(
+            row=1, column=0, padx=self.padX, pady=self.padY)
 
-    global entries
-    global caps
-    global entryVars
-    entries = []
-    caps = []
-    entryVars = []
+        for i in range(len(self.attributes)):
+            tk.Label(self.window, text=self.attributes[i]).grid(
+                row=i+2, column=0, padx=self.padX, pady=self.padY)
 
-    for i in range(LIST_LENGTH):
-        tk.Label(master, text=SKILLS[i]).grid(
-            row=i+2, column=0, padx=PADX, pady=PADY)
+    def setupPointEntries(self):
+        tk.Label(self.window, text="Points").grid(
+            row=1, column=1, padx=self.padX, pady=self.padY)
 
-    for i in range(LIST_LENGTH):
-        caps.append(tk.Label(master, text=DESCRIPTORS[4]))
-        caps[-1].grid(row=i+2, column=12)
+        for i in range(len(self.attributes)):
+            entry = {}
 
-    for i in range(LIST_LENGTH):
-        entryVars.append(tk.IntVar(master))
-        entryVars[-1].set("5")
-        entryVars[-1].trace_add("write", partial(updateTotal))
-        ent = tk.Entry(master, textvariable=entryVars[-1])
-        ent.grid(row=i+2, column=4, padx=PADX, pady=PADY)
-        entries.append(ent)
-        i += 1
+            strVar = tk.StringVar(self.window)
+            strVar.set("5")
+            strVar.trace_add("write", partial(self.updateTotal))
 
-    saveButton = tk.Button(master, text="Save File", command=save)
-    saveButton.grid(row=16, column=0, padx=PADX, pady=PADY)
+            entryObj = tk.Entry(
+                self.window, textvariable=strVar)
+            entryObj.grid(row=i+2, column=1, padx=self.padX, pady=self.padY)
 
-    resetButton = tk.Button(master, text="Reset", command=reset)
-    resetButton.grid(row=16, column=1, padx=PADX, pady=PADY)
+            entry["strVar"] = strVar
+            entry["obj"] = entryObj
+            self.attrEntries.append(entry)
 
-    master.mainloop()
+    def setupCapabilities(self):
+        tk.Label(self.window, text="Capability").grid(
+            row=1, column=2, padx=self.padX, pady=self.padY)
+
+        for i in range(len(self.capabilities)):
+            self.capLabels.append(
+                tk.Label(self.window, text=self.capabilities[4]))
+            self.capLabels[-1].grid(row=i+2, column=2)
+
+    def updateTotal(self, var, index, mode):
+        currentTotal = 0
+        for i in range(len(self.attributes)):
+            if str.isdigit(self.attrEntries[i]["obj"].get()) or self.attrEntries[i]["obj"].get() == 0:
+                currentTotal += int(self.attrEntries[i]["obj"].get())
+                if int(self.attrEntries[i]["obj"].get()) < 1:
+                    row = 0
+                elif int(self.attrEntries[i]["obj"].get()) >= 10:
+                    row = 9
+                else:
+                    row = int(self.attrEntries[i]["obj"].get()) - 1
+                self.capLabels[i].config(text=self.capabilities[row])
+        self.pointsLabel.config(
+            text="Total Points: {}".format(str(currentTotal)))
+
+    def save(self):
+        text = ""
+        for i in range(len(self.attributes)):
+            text += "{}: {} ({})\n".format(self.attributes[i],
+                                           self.attrEntries[i].get(), self.capabilities[i])
+
+        maxLen = len(max(re.findall(r"^\S+", text, re.M), key=len))
+        formatted = re.sub(r"(\S+)[^\S\r\n]+", lambda m: m.group(1) +
+                           ((maxLen + 1) - len(m.group(1))) * " ", text)
+        output = "{}\n\n".format(self.nameEntry.get()) + formatted
+
+        file = open("{}.txt".format(self.nameEntry.get()), "w")
+        file.write(output)
+        file.close()
+
+    def reset(self):
+        self.window.destroy()
+        self.setupWindow()
+        self.setupAttributes()
+        self.setupCapabilities()
+        self.setupPointEntries()
+        self.run()
+
+    def run(self):
+        self.window.mainloop()
 
 
 if __name__ == '__main__':
-    _start()
+    app = PointBuyApp(50, DESCRIPTORS, SKILLS)
+    app.run()
