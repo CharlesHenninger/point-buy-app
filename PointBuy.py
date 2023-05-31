@@ -3,7 +3,7 @@ from functools import partial
 import names
 import re
 
-DESCRIPTORS = [
+CAPABILITIES = [
     "detrimental",
     "impractical",
     "weak",
@@ -31,24 +31,25 @@ SKILLS = [
 
 
 class PointBuyApp:
-    def __init__(self, totalPoints, capabilities, attributes):
+    def __init__(self, attributes, capabilities):
         self.padX = 20
         self.padY = 10
+        self.defaultPoints = "5"
 
-        self.totalPoints = totalPoints
         self.capabilities = capabilities
         self.attributes = attributes
 
         self.window = None
         self.nameEntry = None
+        self.pointsLabel = None
 
         self.attrEntries = []
         self.capLabels = []
 
         self.setupWindow()
         self.setupAttributes()
-        self.setupPointEntries()
         self.setupCapabilities()
+        self.setupPointEntries()
 
     def setupWindow(self):
         self.window = tk.Tk()
@@ -87,7 +88,7 @@ class PointBuyApp:
             entry = {}
 
             strVar = tk.StringVar(self.window)
-            strVar.set("5")
+            strVar.set(self.defaultPoints)
             strVar.trace_add("write", self.updateTotal)
 
             entryObj = tk.Entry(
@@ -97,7 +98,8 @@ class PointBuyApp:
             entry["strVar"] = strVar
             entry["obj"] = entryObj
             self.attrEntries.append(entry)
-
+        self.updateTotal()
+        
     def setupCapabilities(self):
         tk.Label(self.window, text="Capability").grid(
             row=1, column=2, padx=self.padX, pady=self.padY)
@@ -107,7 +109,7 @@ class PointBuyApp:
                 tk.Label(self.window, text=self.capabilities[4]))
             self.capLabels[-1].grid(row=i+2, column=2)
 
-    def updateTotal(self, var, index, mode):
+    def updateTotal(self, var=None, index=None, mode=None):
         currentTotal = 0
         for i in range(len(self.attributes)):
             if str.isdigit(self.attrEntries[i]["obj"].get()) or self.attrEntries[i]["obj"].get() == 0:
@@ -126,7 +128,7 @@ class PointBuyApp:
         text = ""
         for i in range(len(self.attributes)):
             text += "{}: {} ({})\n".format(self.attributes[i],
-                                           self.attrEntries[i].get(), self.capabilities[i])
+                                           self.attrEntries[i]["obj"].get(), self.capabilities[i])
 
         maxLen = len(max(re.findall(r"^\S+", text, re.M), key=len))
         formatted = re.sub(r"(\S+)[^\S\r\n]+", lambda m: m.group(1) +
@@ -139,7 +141,7 @@ class PointBuyApp:
 
     def reset(self):
         for entry in self.attrEntries:
-            entry["strVar"].set("5")
+            entry["strVar"].set(self.defaultPoints)
 
     def newCharacter(self):
         self.reset()
@@ -151,5 +153,5 @@ class PointBuyApp:
 
 
 if __name__ == '__main__':
-    app = PointBuyApp(50, DESCRIPTORS, SKILLS)
+    app = PointBuyApp(SKILLS, CAPABILITIES)
     app.run()
