@@ -54,12 +54,12 @@ class PointBuyApp:
         self.window = tk.Tk()
         self.window.title("Point Buy")
 
-        self.nameEntry = tk.Entry(self.window)
+        self.nameEntry = tk.Entry(self.window, width=30)
         self.nameEntry.grid(row=0, column=0, padx=self.padX, pady=self.padY)
         self.nameEntry.insert(0, names.get_full_name())
 
         self.pointsLabel = tk.Label(self.window, text="Total Points: 50")
-        self.pointsLabel.grid(row=6, column=20, padx=self.padX, pady=self.padY)
+        self.pointsLabel.grid(row=6, column=3, padx=self.padX, pady=self.padY)
 
         saveButton = tk.Button(
             self.window, text="Save File", command=self.save)
@@ -67,6 +67,9 @@ class PointBuyApp:
 
         resetButton = tk.Button(self.window, text="Reset", command=self.reset)
         resetButton.grid(row=0, column=2, padx=self.padX, pady=self.padY)
+
+        newCharButton = tk.Button(self.window, text="New Character", command=self.newCharacter)
+        newCharButton.grid(row=0, column=3, padx=self.padX, pady=self.padY)
 
     def setupAttributes(self):
         tk.Label(self.window, text="Attributes").grid(
@@ -137,6 +140,11 @@ class PointBuyApp:
     def reset(self):
         for entry in self.attrEntries:
             entry["strVar"].set("5")
+
+    def newCharacter(self):
+        self.reset()
+        self.nameEntry.delete(0, 'end')
+        self.nameEntry.insert(0, names.get_full_name())
 
     def run(self):
         self.window.mainloop()
