@@ -1,5 +1,4 @@
 import tkinter as tk
-from functools import partial
 import names
 import re
 
@@ -69,7 +68,8 @@ class PointBuyApp:
         resetButton = tk.Button(self.window, text="Reset", command=self.reset)
         resetButton.grid(row=0, column=2, padx=self.padX, pady=self.padY)
 
-        newCharButton = tk.Button(self.window, text="New Character", command=self.newCharacter)
+        newCharButton = tk.Button(
+            self.window, text="New Character", command=self.newCharacter)
         newCharButton.grid(row=0, column=3, padx=self.padX, pady=self.padY)
 
     def setupAttributes(self):
@@ -99,7 +99,7 @@ class PointBuyApp:
             entry["obj"] = entryObj
             self.attrEntries.append(entry)
         self.updateTotal()
-        
+
     def setupCapabilities(self):
         tk.Label(self.window, text="Capability").grid(
             row=1, column=2, padx=self.padX, pady=self.padY)
