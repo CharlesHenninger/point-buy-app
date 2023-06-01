@@ -128,7 +128,7 @@ class PointBuyApp:
         text = ""
         for i in range(len(self.attributes)):
             text += "{}: {} ({})\n".format(self.attributes[i],
-                                           self.attrEntries[i]["obj"].get(), self.capabilities[i])
+                                           self.attrEntries[i]["obj"].get(), self.capLabels[i].cget("text"))
 
         maxLen = len(max(re.findall(r"^\S+", text, re.M), key=len))
         formatted = re.sub(r"(\S+)[^\S\r\n]+", lambda m: m.group(1) +
